@@ -2,7 +2,6 @@ package org.dobots.utilities;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -19,8 +18,10 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	
 	private static final String TAG = "CameraPreview";
 	
+	private static final int[] ROTATIONS = { 90, 270 };
+	
 	public interface CameraPreviewCallback {
-		public void onFrame(byte[] rgb, int width, int height);
+		public void onFrame(byte[] rgb, int width, int height, int rotation);
 	}
 	
     SurfaceHolder mHolder;  
@@ -37,6 +38,8 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	private int mCameraId;
 	
 	private int initWidth = -1, initHeight = -1;
+	
+	private boolean m_bStopOnHide = true;
     
     public CameraPreview(Context context) {  
         super(context);  
@@ -72,13 +75,42 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	mFrameListener = listener;
     }
     
-    private void stopCamera() {
+    public void setStopOnHide(boolean bStop) {
+    	m_bStopOnHide = bStop;
+    }
+    
+    public void stopCamera() {
     	if (mCamera != null) {
 			mCamera.setPreviewCallback(null);  
 	    	mCamera.stopPreview();
 	    	mCamera.release();
 	    	mCamera = null;
     	}
+    }
+    
+    public void startCamera() {
+    	try {
+	    	if (mCamera == null) {
+	        	// open camera
+	        	mCamera = Camera.open(mCameraId);
+	        	
+	        	// assign preview size
+	        	mParameters = mCamera.getParameters();
+	        	mParameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);  
+		    	mCamera.setParameters(mParameters);
+	        	
+	        	// set screen preview settings 
+	        	mCamera.setDisplayOrientation(90);
+				mCamera.setPreviewDisplay(this.getHolder());
+				mCamera.setPreviewCallback(this); 
+				
+				// start preview
+		    	mCamera.startPreview();
+	    	}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
     }
     
     public void toggleCamera() {
@@ -109,37 +141,47 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 		}  
     }
   
-    public void surfaceCreated(SurfaceHolder holder) {  
-        // The Surface has been created, acquire the camera and tell it where  
-        // to draw.  
-    	mCameraId = Camera.getNumberOfCameras() - 1;
-        mCamera = Camera.open(mCameraId);  
-        try {  
-        	mCamera.setDisplayOrientation(90);
-        	mCamera.setPreviewDisplay(holder);  
-             
-			//sets the camera callback to be the one defined in this class  
-			mCamera.setPreviewCallback(this);  
-			
-			///initialize the variables  
-			mParameters = mCamera.getParameters();  
-//			List<Size> previewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-//			Size size = previewSizes.get(previewSizes.size()-1);
-//			mParameters.setPreviewSize(size.width, size.height);
-			
-			if (initWidth != -1 && initHeight != -1) {
-				mParameters.setPreviewSize(initWidth, initHeight);
-				mCamera.setParameters(mParameters);
-			}
-			mPreviewSize = mParameters.getPreviewSize();
-			
-			// start camera preview
-			mCamera.startPreview();
-        } catch (IOException exception) {  
-            mCamera.release();  
-            mCamera = null;  
-            // TODO: add more exception handling logic here  
-        }  
+    public void surfaceCreated(SurfaceHolder holder) {
+    	
+    	if (mCamera == null) {  
+            // The Surface has been created, acquire the camera and tell it where  
+            // to draw.  
+	    	mCameraId = Camera.getNumberOfCameras() - 1;
+	        mCamera = Camera.open(mCameraId);  
+	        try {  
+	        	mCamera.setPreviewDisplay(holder);  
+	             
+				//sets the camera callback to be the one defined in this class  
+				mCamera.setPreviewCallback(this);  
+	        	mCamera.setDisplayOrientation(90);
+				
+				///initialize the variables  
+				mParameters = mCamera.getParameters();  
+	//			List<Size> previewSizes = mCamera.getParameters().getSupportedPreviewSizes();
+	//			Size size = previewSizes.get(previewSizes.size()-1);
+	//			mParameters.setPreviewSize(size.width, size.height);
+				
+				if (initWidth != -1 && initHeight != -1) {
+					mParameters.setPreviewSize(initWidth, initHeight);
+					mCamera.setParameters(mParameters);
+				}
+				mPreviewSize = mParameters.getPreviewSize();
+				
+				// start camera preview
+				mCamera.startPreview();
+	        } catch (IOException exception) {  
+	            mCamera.release();  
+	            mCamera = null;  
+	            // TODO: add more exception handling logic here  
+	        }  
+    	} else {
+        	try {
+				mCamera.setPreviewDisplay(holder);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  
+    	}
     }
     
     public void setPreviewSize(int width, int height) {
@@ -159,18 +201,15 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         // Surface will be destroyed when we return, so stop the preview.  
         // Because the CameraDevice object is not a shared resource, it's very  
         // important to release it when the activity is paused.  
-		stopCamera();
+    	if (m_bStopOnHide) {
+    		stopCamera();
+    	}
     }  
   
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {  
         // Now that the surface is created, start the preview. 
     	// Note: not all phones support arbitrary preview sizes, so we leave
     	// the default size for now
-//    	mPreviewSize.height = h;
-//    	mPreviewSize.width = w;
-//    	mParameters.setPreviewSize(w, h);
-//    	mCamera.setParameters(mParameters);
-//      mCamera.startPreview();  
     }  
     
     @Override  
@@ -178,7 +217,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         //transforms NV21 pixel data into RGB pixels 
         byte[] frame = decodeYUV(data, mPreviewSize.width,  mPreviewSize.height);
         if (mFrameListener != null) {
-        	mFrameListener.onFrame(frame, mPreviewSize.width, mPreviewSize.height);
+        	mFrameListener.onFrame(frame, mPreviewSize.width, mPreviewSize.height, ROTATIONS[mCameraId]);
         }
     }
     
@@ -187,6 +226,18 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	YuvImage yuvImage = new YuvImage(yuv, ImageFormat.NV21, width, height, null);
     	yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out);
     	byte[] imageBytes = out.toByteArray();
+
+//		// decode the received frame from jpeg to a bitmap
+//		ByteArrayInputStream stream = new ByteArrayInputStream(imageBytes);
+//		Bitmap bmp = BitmapFactory.decodeStream(stream);
+//		Matrix matrix = new Matrix();
+//		matrix.postRotate(-90);
+//		Bitmap bmp_rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, false);
+//
+//		out.reset();
+//		bmp_rotated.compress(CompressFormat.JPEG, 50, out);
+//		imageBytes = out.toByteArray();
+    	
     	return imageBytes;
     }
       

@@ -1,12 +1,15 @@
 package org.dobots.utilities;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import junit.framework.Assert;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,7 +30,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,7 +44,7 @@ public class Utils {
 	}
 	
 	public static Activity getContext() {
-		assert CONTEXT != null : "call setContext first with your main activity!";
+		Assert.assertNotNull("call setContext first with your main activity!", CONTEXT);
 		
 		return CONTEXT;
 	}
@@ -67,7 +69,7 @@ public class Utils {
 		return (short)(((i_sValue >> 8) & 0xFF) | ((i_sValue & 0xFF) << 8));
 	}
 
-	public static int LittleEndianToBigEndian(int i_nValue) {
+	public static int convertEndian(int i_nValue) {
 		return (int) (((i_nValue >> 24) & 0xFF) |
 					  ((i_nValue >> 8) & 0xFF00) |
 					  ((i_nValue & 0xFF00) << 8) |
@@ -83,6 +85,19 @@ public class Utils {
 		return intValue;
 	}
 	
+
+	public static String bytesToHex(byte[] bytes) {
+	    final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+	    char[] hexChars = new char[bytes.length * 2];
+	    int v;
+	    for ( int j = 0; j < bytes.length; j++ ) {
+	        v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = hexArray[v >>> 4];
+	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
+	
 	public static byte[] stringToByteArray(String i_strText) {
 		byte [] result = new byte[i_strText.length()];
 		
@@ -92,6 +107,10 @@ public class Utils {
         return result;
 	}
 
+	public static String intToHex(int value) {
+		return Integer.toHexString(value);
+	}
+	
 	public static short getUnsignedByte(ByteBuffer buffer) {
 		return (short) (buffer.get() & 0xFF);
 	}
@@ -118,6 +137,11 @@ public class Utils {
 		result.replaceAll("\\r\\n", "");
 		
 		return result;
+	}
+
+	public static String byteArrayToString(byte[] i_rgbyString, int i_nOffset, int i_nLength) {
+		byte[] arr = Arrays.copyOfRange(i_rgbyString, i_nOffset, i_nOffset + i_nLength);
+		return new String(arr).trim();
 	}
 
     public static void waitSomeTime(int millis) {
@@ -150,11 +174,11 @@ public class Utils {
 //    }
     
 	public static void showLayout(LinearLayout i_oLayout, boolean i_bShow) {
-    	if (i_bShow) {
-    		i_oLayout.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-    	} else {
-    		i_oLayout.setLayoutParams(new LinearLayout.LayoutParams(0,0));
-    	}
+//    	if (i_bShow) {
+//    		i_oLayout.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+//    	} else {
+//    		i_oLayout.setLayoutParams(new LinearLayout.LayoutParams(0,0));
+//    	}
 		if (i_bShow) {
 			i_oLayout.setVisibility(View.VISIBLE);
 		} else {
@@ -333,4 +357,16 @@ public class Utils {
 		}
 		return true;
 	}
+	
+	public static void setEnabledRecursive(ViewGroup i_oView, boolean i_bEnabled) {
+		for (int i = 0; i < i_oView.getChildCount(); ++i) {
+			View view = i_oView.getChildAt(i);
+			if (view instanceof ViewGroup) {
+				setEnabledRecursive((ViewGroup)view, i_bEnabled);
+			} else {
+				view.setEnabled(i_bEnabled);
+			}
+		}
+	}
+	
 }
