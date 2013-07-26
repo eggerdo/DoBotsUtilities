@@ -2,10 +2,18 @@ package org.dobots.utilities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 
 public class BaseActivity extends Activity {
-
+	
+	protected BaseApplication mApplication;
 	private IActivityResultListener m_oListener;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mApplication = (BaseApplication)getApplicationContext();
+	}
 	
 	public void startActivityForResult(Intent intent, int requestCode, IActivityResultListener listener) {
 		m_oListener = listener;
@@ -22,4 +30,28 @@ public class BaseActivity extends Activity {
 		}
 	}
 	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mApplication.setCurrentActivity(this);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		clearActivityReferences();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		clearActivityReferences();
+	}
+	
+	private void clearActivityReferences() {
+		Activity currentActivity = mApplication.getCurrentActivity();
+		if (currentActivity != null && currentActivity.equals(this)) {
+			mApplication.setCurrentActivity(null);
+		}
+	}
 }
