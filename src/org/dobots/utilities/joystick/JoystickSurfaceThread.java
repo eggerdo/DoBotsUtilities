@@ -26,6 +26,8 @@ public class JoystickSurfaceThread extends Thread {
 	Joystick m_oJoystick;
 
 	public JoystickSurfaceThread(Joystick i_oJoystick){
+		super("JoystickSurfaceThread");
+		
 		m_oJoystick = i_oJoystick;
 		
 		m_oSurfaceHolder = m_oJoystick.getHolder();
