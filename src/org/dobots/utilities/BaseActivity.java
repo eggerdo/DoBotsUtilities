@@ -6,13 +6,15 @@ import android.os.Bundle;
 
 public class BaseActivity extends Activity {
 	
-	protected BaseApplication mApplication;
+	protected BaseApplication mApplication = null;
 	private IActivityResultListener m_oListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mApplication = (BaseApplication)getApplicationContext();
+		if (getApplicationContext() instanceof BaseApplication) {
+			mApplication = (BaseApplication)getApplicationContext();
+		}
 	}
 	
 	public void startActivityForResult(Intent intent, int requestCode, IActivityResultListener listener) {
@@ -33,7 +35,9 @@ public class BaseActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mApplication.setCurrentActivity(this);
+		if (mApplication != null) {
+			mApplication.setCurrentActivity(this);
+		}
 	}
 	
 	@Override
@@ -49,9 +53,11 @@ public class BaseActivity extends Activity {
 	}
 	
 	private void clearActivityReferences() {
-		Activity currentActivity = mApplication.getCurrentActivity();
-		if (currentActivity != null && currentActivity.equals(this)) {
-			mApplication.setCurrentActivity(null);
+		if (mApplication != null) {
+			Activity currentActivity = mApplication.getCurrentActivity();
+			if (currentActivity != null && currentActivity.equals(this)) {
+				mApplication.setCurrentActivity(null);
+			}
 		}
 	}
 }

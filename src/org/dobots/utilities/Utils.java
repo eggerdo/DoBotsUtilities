@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -213,8 +214,23 @@ public class Utils {
 		Utils.writeToCanvas(context, canvas, i_strText, i_bCentered);
 		i_oImage.setImageBitmap(bmp);
     }
-
+    
+    public static void writeToSurfaceView(Context context, SurfaceView i_oView, String i_strText, boolean i_bCentered) {
+    	Canvas canvas = i_oView.getHolder().lockCanvas();
+		if (canvas != null) {
+			try {
+				Utils.writeToCanvas(context, canvas, i_strText, i_bCentered);
+			} finally {
+				i_oView.getHolder().unlockCanvasAndPost(canvas);
+			}
+		}
+    }
+    
 	public static void writeToCanvas(Context context, Canvas i_oCanvas, String i_strText, boolean i_bCentered) {
+		if (i_oCanvas == null) {
+			return;
+		}
+		
 		i_oCanvas.drawColor(Color.BLACK);
 		LinearLayout layout = new LinearLayout(context);
 		if (i_bCentered) {
