@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.view.SurfaceHolder;
 
 public class JoystickSurfaceThread extends Thread {
@@ -53,7 +54,7 @@ public class JoystickSurfaceThread extends Thread {
 						canvas = m_oSurfaceHolder.lockCanvas(null);
 						//clear the screen with the black painter.
 						//reset the canvas
-						canvas.drawColor(Color.BLACK);
+						canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
 						//This is where we draw the joystick
 						m_oJoystick.doDraw(canvas);
 					} finally {

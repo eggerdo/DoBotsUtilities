@@ -6,11 +6,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
 public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
 	
@@ -30,6 +34,12 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
 
         getHolder().addCallback(this); //register SurfaceHolder.Callback
         getHolder().setKeepScreenOn(true); //keep screen on when this SurfaceView is displayed
+        
+        if (!isInEditMode()) {
+	        // neccessary to make a surface view transparent 
+	        setZOrderOnTop(true);
+	        getHolder().setFormat(PixelFormat.TRANSPARENT);
+        }
         
         m_oController = new JoystickController();
     }

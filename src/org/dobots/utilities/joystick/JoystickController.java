@@ -64,6 +64,18 @@ public class JoystickController {
 			lastEvent = event;
 		}
 		
+		// only accept touch points inside the max move radius
+		// if dragging is not already started
+		if (!m_bDragging) {
+			int dx = (int)event.getX() - m_oOrigin.x;
+			int dy = (int)event.getY() - m_oOrigin.y;
+			double distance = Math.sqrt(dx * dx + dy * dy);
+			
+			if (distance > m_nMaxMoveRadius) {
+				return;
+			}
+		}
+		
 		//drag drop 
 		if ( event.getAction() == MotionEvent.ACTION_DOWN ){
 			m_oListener.onJoystickTouch(true);
