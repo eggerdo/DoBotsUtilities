@@ -3,6 +3,7 @@ package org.dobots.utilities;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,6 +15,7 @@ public class BaseActivity extends Activity {
 	private IActivityResultListener m_oActivityResultListener;
 	
 	private ArrayList<IMenuListener> m_oMenuListeners;
+	private ArrayList<IDialogListener> m_oDialogListeners;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +26,7 @@ public class BaseActivity extends Activity {
 		}
 		
 		m_oMenuListeners = new ArrayList<IMenuListener>();
+		m_oDialogListeners = new ArrayList<IDialogListener>();
 	}
 	
 	public void startActivityForResult(Intent intent, int requestCode, IActivityResultListener listener) {
@@ -84,7 +87,7 @@ public class BaseActivity extends Activity {
 		
 		if (!m_oMenuListeners.isEmpty()) {
 			for (IMenuListener listener : m_oMenuListeners) {
-				listener.onCreateOptionsMenu(menu);
+				listener.onCreateOptionsMenu(this, menu);
 			}
 		}
 		
@@ -97,7 +100,7 @@ public class BaseActivity extends Activity {
 
 		if (!m_oMenuListeners.isEmpty()) {
 			for (IMenuListener listener : m_oMenuListeners) {
-				listener.onPrepareOptionsMenu(menu);
+				listener.onPrepareOptionsMenu(this, menu);
 			}
 		}
 		
@@ -109,10 +112,44 @@ public class BaseActivity extends Activity {
 
 		if (!m_oMenuListeners.isEmpty()) {
 			for (IMenuListener listener : m_oMenuListeners) {
-				listener.onOptionsItemSelected(item);
+				listener.onOptionsItemSelected(this, item);
 			}
 		}
 		
 		return super.onOptionsItemSelected(item);
 	}
+	
+	public void addDialogListener(IDialogListener listener) {
+		m_oDialogListeners.add(listener);
+	}
+	
+	public void removeDialogListener(IDialogListener listener) {
+		m_oDialogListeners.remove(listener);
+	}
+	
+	@Override
+    protected Dialog onCreateDialog(int id) {
+		
+		if (!m_oDialogListeners.isEmpty()) {
+			for (IDialogListener listener : m_oDialogListeners) {
+				Dialog dlg = listener.onCreateDialog(this, id);
+				if (dlg != null) {
+					return dlg;
+				}
+			}
+		}
+		
+		return super.onCreateDialog(id);
+    }
+
+	@Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+		
+		if (!m_oDialogListeners.isEmpty()) {
+			for (IDialogListener listener : m_oDialogListeners) {
+				listener.onPrepareDialog(this, id, dialog);
+			}
+		}
+	}
+
 }
