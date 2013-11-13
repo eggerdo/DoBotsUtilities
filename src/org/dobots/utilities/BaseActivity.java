@@ -2,12 +2,14 @@ package org.dobots.utilities;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class BaseActivity extends Activity {
 	
@@ -16,10 +18,14 @@ public class BaseActivity extends Activity {
 	
 	private ArrayList<IMenuListener> m_oMenuListeners;
 	private ArrayList<IDialogListener> m_oDialogListeners;
+	protected Toast m_oReusableToast;
 	
+	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		m_oReusableToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
 		
 		if (getApplicationContext() instanceof BaseApplication) {
 			mApplication = (BaseApplication)getApplicationContext();
@@ -152,4 +158,30 @@ public class BaseActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Displays a message as a toast
+	 * @param textToShow the message
+	 * @param duration the length of the toast to display
+	 */
+	protected void showToast(String textToShow, int duration) {
+		if (m_oReusableToast != null) {
+			m_oReusableToast.setText(textToShow);
+			m_oReusableToast.setDuration(duration);
+			m_oReusableToast.show();
+		}
+	}
+
+	/**
+	 * Displays a message as a toast
+	 * @param nResID the resource ID to display
+	 * @param duration the length of the toast to display
+	 */
+	protected void showToast(int nResID, int duration) {
+		if (m_oReusableToast != null) {
+			m_oReusableToast.setText(nResID);
+			m_oReusableToast.setDuration(duration);
+			m_oReusableToast.show();
+		}
+	}
+	
 }

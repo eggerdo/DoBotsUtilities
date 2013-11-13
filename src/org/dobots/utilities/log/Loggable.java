@@ -3,7 +3,7 @@ package org.dobots.utilities.log;
 public class Loggable {
 	
 	// Should only be true when debugging
-	protected boolean m_bDebug;
+	protected boolean m_bDebug = true;
 	
 	// receives debug events
 	protected ILogListener m_oLogListener = null;

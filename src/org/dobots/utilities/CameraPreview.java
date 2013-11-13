@@ -13,6 +13,13 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.widget.RelativeLayout.LayoutParams;
+
+/*
+ * See following link for an improved CameraPreview, but which requires Android API >= 11
+ * http://stackoverflow.com/questions/10775942/android-sdk-get-raw-preview-camera-image-without-displaying-it/10776349#10776349
+ */
 
 public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.Callback, PreviewCallback {
 	
@@ -40,6 +47,8 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	private int initWidth = -1, initHeight = -1;
 	
 	private boolean m_bStopOnHide = true;
+
+	private boolean m_bHidden = false;
     
     public CameraPreview(Context context) {  
         super(context);  
@@ -86,6 +95,32 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	    	mCamera.release();
 	    	mCamera = null;
     	}
+    }
+
+	public void setHidden() {
+		m_bHidden = true;
+	}
+	
+	public boolean isHidden() {
+		return m_bHidden;
+	}
+     
+    LayoutParams mOldParams;
+    public void hideCameraDisplay() {
+    	// we can't remove the surface without stopping the preview,
+    	// so instead we make the size of the surface 0 and give
+    	// it back it's original size in the startCameraDisplay
+    	mOldParams = (LayoutParams)getLayoutParams();
+    	setLayoutParams(new LayoutParams(0,  0));
+    	m_bHidden = true;
+    }
+    
+    public void showCameraDisplay() {
+    	if (mOldParams != null) {
+    		setLayoutParams(mOldParams);
+    	}
+    	mOldParams = null;
+    	m_bHidden = false;
     }
     
     public void startCamera() {
@@ -169,6 +204,10 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 				
 				// start camera preview
 				mCamera.startPreview();
+				
+				if (m_bHidden) {
+					hideCameraDisplay();
+				}
 	        } catch (IOException exception) {  
 	            mCamera.release();  
 	            mCamera = null;  
@@ -240,5 +279,5 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	
     	return imageBytes;
     }
-      
+ 
 }  
