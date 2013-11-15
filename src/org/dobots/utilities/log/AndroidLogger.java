@@ -2,7 +2,7 @@ package org.dobots.utilities.log;
 
 import android.util.Log;
 
-public class AndroidLogListener implements ILogListener {
+public class AndroidLogger implements ILogListener {
 
 	@Override
 	public void onTrace(LogTypes i_eType, String i_strTag, String i_strMessage) {
