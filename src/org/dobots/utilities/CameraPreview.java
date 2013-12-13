@@ -2,9 +2,11 @@ package org.dobots.utilities;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -12,8 +14,11 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.RelativeLayout.LayoutParams;
 
 /*
@@ -95,6 +100,10 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	    	mCamera.release();
 	    	mCamera = null;
     	}
+    }
+    
+    public void destroy() {
+    	stopCamera();
     }
 
 	public void setHidden() {
@@ -182,7 +191,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
             // The Surface has been created, acquire the camera and tell it where  
             // to draw.  
 	    	mCameraId = Camera.getNumberOfCameras() - 1;
-	        mCamera = Camera.open(mCameraId);  
+    		mCamera = Camera.open(mCameraId);  
 	        try {  
 	        	mCamera.setPreviewDisplay(holder);  
 	             
@@ -236,6 +245,14 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	}
     }
     
+    public Size getPreviewSize() {
+    	return mPreviewSize;
+    }
+    
+    public List<Size> getSupportedPreviewSizes() {
+    	return mParameters.getSupportedPreviewSizes();
+    }
+    
     public void surfaceDestroyed(SurfaceHolder holder) {  
         // Surface will be destroyed when we return, so stop the preview.  
         // Because the CameraDevice object is not a shared resource, it's very  
@@ -263,7 +280,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     private byte[] decodeYUV(byte[] yuv, int width, int height) {
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
     	YuvImage yuvImage = new YuvImage(yuv, ImageFormat.NV21, width, height, null);
-    	yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+    	yuvImage.compressToJpeg(new Rect(0, 0, width, height), 90, out);
     	byte[] imageBytes = out.toByteArray();
 
 //		// decode the received frame from jpeg to a bitmap
@@ -278,6 +295,67 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 //		imageBytes = out.toByteArray();
     	
     	return imageBytes;
+    }
+    
+    // don't forget to call destroy on the CameraPreview!
+    public static CameraPreview createCameraWithoutSurface(Context context) {
+
+		// On some Android devices, Camera Preview is only available if
+		// a valid SurfaceView is provided. Valid meaning not a dummy SurfaceView.
+		// to get a valid SurfaceView in a Service which doesn't have a layout we
+		// create a dummy SurfaceView and assign it to the window manager. the window
+		// manager then creates the underlying surface so that the camera preview can
+		// be obtained.
+    	class InvisibleCamera extends CameraPreview{
+
+    		public WindowManager mWindowManager;
+    		
+			public InvisibleCamera(Context context) {
+				super(context);
+
+				mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+				
+				// we assign dummy values as width and height to the surfaceview. we actually
+				// want it to be invisible, but we cannot assign 0 as width and hight or the
+				// surface would not be created. once the surface is created we can then make
+				// it invisible
+		    	WindowManager.LayoutParams params = new WindowManager.LayoutParams(1, 1,
+				            WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+				            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+				            PixelFormat.TRANSLUCENT);   
+				
+		    	mWindowManager.addView(this, params);
+			}
+    		
+			@Override
+    		public void destroy() {
+    			// we have to make the camera preview visible again otherwise the
+    			// surface doesn't get destroyed (and the camera continues running)
+    			ViewGroup.LayoutParams params = getLayoutParams();
+    			params.height = 1;
+    			params.width = 1;
+    			mWindowManager.updateViewLayout(this, params);
+    			
+    			// remove the view
+    			mWindowManager.removeView(this);
+    			
+    			super.destroy();
+    		}
+    		
+    		@Override
+    		public void surfaceCreated(SurfaceHolder holder) {
+    			super.surfaceCreated(holder);
+
+    			// once the surface for the camera preview is created, we make it disappear 
+    			// by setting the width and height to 0
+    			ViewGroup.LayoutParams params = getLayoutParams();
+    			params.height = 0;
+    			params.width = 0;
+    			mWindowManager.updateViewLayout(this, params);
+    		}
+    	}
+
+    	return new InvisibleCamera(context.getApplicationContext());
     }
  
 }  

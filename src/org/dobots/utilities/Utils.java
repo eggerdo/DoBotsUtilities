@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import junit.framework.Assert;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -28,11 +27,13 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -158,7 +159,10 @@ public class Utils {
 		Message msg = Message.obtain();
 		msg.what = i_nMsgID;
 		msg.obj = i_oData;
-		i_oTarget.sendMessage(msg);
+		
+		if (i_oTarget != null) {
+			i_oTarget.sendMessage(msg);
+		}
 	}
 	
 //    public static void sendBundle(Handler target, Bundle bundle) {
@@ -253,8 +257,10 @@ public class Utils {
 		if (item != null) {
 			if (i_bOn) {
 				item.setIcon(android.R.drawable.button_onoff_indicator_on);
+				item.setTitle(item.getTitle().toString().replace("ON", "OFF"));
 			} else {
 				item.setIcon(android.R.drawable.button_onoff_indicator_off);
+				item.setTitle(item.getTitle().toString().replace("OFF", "ON"));
 			}
 		}
 	}
@@ -295,7 +301,7 @@ public class Utils {
 	}
 	
 	public static AlertDialog CreateAdapterDialog(Context context, String i_strTitle, ArrayAdapter i_oAdapter, DialogInterface.OnClickListener i_OnClickListener) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_HOLO_LIGHT);
 		builder.setTitle(i_strTitle);
 		builder.setAdapter(i_oAdapter, i_OnClickListener);
 		return builder.create();
@@ -385,4 +391,21 @@ public class Utils {
 		}
 	}
 	
+	public static void setSpinnerSelectionWithoutCallingListener(final Spinner spinner, final int selection) {
+	    final OnItemSelectedListener l = spinner.getOnItemSelectedListener();
+	    spinner.setOnItemSelectedListener(null);
+	    spinner.post(new Runnable() {
+	        @Override
+	        public void run() {
+	            spinner.setSelection(selection);
+	            spinner.post(new Runnable() {
+	                @Override
+	                public void run() {
+	                    spinner.setOnItemSelectedListener(l);
+	                }
+	            });
+	        }
+	    });
+	}
+
 }
