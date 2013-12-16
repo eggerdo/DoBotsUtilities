@@ -1,8 +1,23 @@
-package org.dobots.utilities;
+package org.dobots.utilities.camera;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+
+import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.ImageWriteException;
+import org.apache.sanselan.Sanselan;
+import org.apache.sanselan.common.BinaryConstants;
+import org.apache.sanselan.common.IImageMetadata;
+import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
+import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter;
+import org.apache.sanselan.formats.tiff.TiffImageMetadata;
+import org.apache.sanselan.formats.tiff.constants.ExifTagConstants;
+import org.apache.sanselan.formats.tiff.write.TiffOutputDirectory;
+import org.apache.sanselan.formats.tiff.write.TiffOutputField;
+import org.apache.sanselan.formats.tiff.write.TiffOutputSet;
+import org.dobots.utilities.ScalableSurfaceView;
+import org.dobots.utilities.log.Loggable;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -13,13 +28,13 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.widget.RelativeLayout.LayoutParams;
 
 /*
  * See following link for an improved CameraPreview, but which requires Android API >= 11
@@ -46,6 +61,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     private Size mPreviewSize = null;  
     
     private CameraPreviewCallback mFrameListener = null;
+    private CameraPreviewCallback mYuvListener = null;
 
 	private int mCameraId;
 	
@@ -54,7 +70,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	private boolean m_bStopOnHide = true;
 
 	private boolean m_bHidden = false;
-    
+	
     public CameraPreview(Context context) {  
         super(context);  
           
@@ -62,7 +78,9 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         // underlying surface is created and destroyed.  
         mHolder = getHolder();  
         mHolder.addCallback(this);  
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);  
+        
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }  
 
     public CameraPreview(Context context, AttributeSet attrs) {
@@ -72,7 +90,9 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         // underlying surface is created and destroyed.  
         mHolder = getHolder();  
         mHolder.addCallback(this);  
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);  
+        
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public CameraPreview(Context context, AttributeSet attrs, int defStyle) {
@@ -82,11 +102,17 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         // underlying surface is created and destroyed. 
         mHolder = getHolder();  
         mHolder.addCallback(this);  
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);  
+        
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+            getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
     
     public void setFrameListener(CameraPreviewCallback listener) {
     	mFrameListener = listener;
+    }
+
+    public void setYuvListener(CameraPreviewCallback listener) {
+    	mYuvListener = listener;
     }
     
     public void setStopOnHide(boolean bStop) {
@@ -269,10 +295,15 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     }  
     
     @Override  
-    public void onPreviewFrame(byte[] data, Camera camera) {  
-        //transforms NV21 pixel data into RGB pixels 
-        byte[] frame = decodeYUV(data, mPreviewSize.width,  mPreviewSize.height);
+    public void onPreviewFrame(final byte[] data, Camera camera) {  
+        //transforms NV21 pixel data into RGB pixels
+
+        if (mYuvListener != null) {
+        	mYuvListener.onFrame(data, mPreviewSize.width, mPreviewSize.height, ROTATIONS[mCameraId]);
+        }
         if (mFrameListener != null) {
+            byte[] frame = decodeYUV(data, mPreviewSize.width,  mPreviewSize.height);
+            frame = ExifUtils.encodeExifRotation(frame, ROTATIONS[mCameraId]);
         	mFrameListener.onFrame(frame, mPreviewSize.width, mPreviewSize.height, ROTATIONS[mCameraId]);
         }
     }
@@ -282,17 +313,6 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	YuvImage yuvImage = new YuvImage(yuv, ImageFormat.NV21, width, height, null);
     	yuvImage.compressToJpeg(new Rect(0, 0, width, height), 90, out);
     	byte[] imageBytes = out.toByteArray();
-
-//		// decode the received frame from jpeg to a bitmap
-//		ByteArrayInputStream stream = new ByteArrayInputStream(imageBytes);
-//		Bitmap bmp = BitmapFactory.decodeStream(stream);
-//		Matrix matrix = new Matrix();
-//		matrix.postRotate(-90);
-//		Bitmap bmp_rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, false);
-//
-//		out.reset();
-//		bmp_rotated.compress(CompressFormat.JPEG, 50, out);
-//		imageBytes = out.toByteArray();
     	
     	return imageBytes;
     }
