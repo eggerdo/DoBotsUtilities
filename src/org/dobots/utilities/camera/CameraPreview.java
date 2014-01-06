@@ -4,20 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.sanselan.ImageReadException;
-import org.apache.sanselan.ImageWriteException;
-import org.apache.sanselan.Sanselan;
-import org.apache.sanselan.common.BinaryConstants;
-import org.apache.sanselan.common.IImageMetadata;
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
-import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter;
-import org.apache.sanselan.formats.tiff.TiffImageMetadata;
-import org.apache.sanselan.formats.tiff.constants.ExifTagConstants;
-import org.apache.sanselan.formats.tiff.write.TiffOutputDirectory;
-import org.apache.sanselan.formats.tiff.write.TiffOutputField;
-import org.apache.sanselan.formats.tiff.write.TiffOutputSet;
 import org.dobots.utilities.ScalableSurfaceView;
-import org.dobots.utilities.log.Loggable;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -30,7 +17,6 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -63,13 +49,15 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     private CameraPreviewCallback mFrameListener = null;
     private CameraPreviewCallback mYuvListener = null;
 
-	private int mCameraId;
+	private int mCameraId = 0;
 	
 	private int initWidth = -1, initHeight = -1;
 	
 	private boolean m_bStopOnHide = true;
 
 	private boolean m_bHidden = false;
+
+	private boolean mAutoExposureEnabled = true;
 	
     public CameraPreview(Context context) {  
         super(context);  
@@ -128,6 +116,10 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	}
     }
     
+    public boolean isStopped() {
+    	return mCamera == null;
+    }
+    
     public void destroy() {
     	stopCamera();
     }
@@ -141,6 +133,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	}
      
     LayoutParams mOldParams;
+
     public void hideCameraDisplay() {
     	// we can't remove the surface without stopping the preview,
     	// so instead we make the size of the surface 0 and give
@@ -166,7 +159,12 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	        	
 	        	// assign preview size
 	        	mParameters = mCamera.getParameters();
-	        	mParameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);  
+	        	mParameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height); 
+	        	
+	        	if (isAutoExposureLockSupported()) {
+	        		mParameters.setAutoExposureLock(!mAutoExposureEnabled);
+	        	}
+	        	
 		    	mCamera.setParameters(mParameters);
 	        	
 	        	// set screen preview settings 
@@ -196,6 +194,11 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         	// assign preview size
         	mParameters = mCamera.getParameters();
         	mParameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);  
+        	
+        	if (isAutoExposureLockSupported()) {
+        		mParameters.setAutoExposureLock(!mAutoExposureEnabled);
+        	}
+        	
 	    	mCamera.setParameters(mParameters);
         	
         	// set screen preview settings 
@@ -216,7 +219,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	if (mCamera == null) {  
             // The Surface has been created, acquire the camera and tell it where  
             // to draw.  
-	    	mCameraId = Camera.getNumberOfCameras() - 1;
+//	    	mCameraId = Camera.getNumberOfCameras() - 1;
     		mCamera = Camera.open(mCameraId);  
 	        try {  
 	        	mCamera.setPreviewDisplay(holder);  
@@ -239,6 +242,12 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 				
 				// start camera preview
 				mCamera.startPreview();
+
+	        	if (isAutoExposureLockSupported()) {
+	        		mParameters.setAutoExposureLock(!mAutoExposureEnabled);
+	        	}
+	        	
+				mCamera.setParameters(mParameters);
 				
 				if (m_bHidden) {
 					hideCameraDisplay();
@@ -278,6 +287,30 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     public List<Size> getSupportedPreviewSizes() {
     	return mParameters.getSupportedPreviewSizes();
     }
+    
+	public void setAutoExposure(Boolean enable) {
+		mAutoExposureEnabled = enable;
+		
+		if (isAutoExposureLockSupported()) {
+			mParameters.setAutoExposureLock(!enable);
+			if (mCamera != null) {
+				mCamera.setParameters(mParameters);
+			}
+		}
+	}
+	
+	public boolean isAutoExposureLockSupported() {
+		if (mParameters != null) {
+			if(Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+				return mParameters.isAutoExposureLockSupported();
+			}
+		}
+		return false;
+	}
+	
+	public boolean isAutoExposureEnabled() {
+		return mAutoExposureEnabled;
+	}
     
     public void surfaceDestroyed(SurfaceHolder holder) {  
         // Surface will be destroyed when we return, so stop the preview.  
@@ -377,5 +410,6 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 
     	return new InvisibleCamera(context.getApplicationContext());
     }
+
  
 }  

@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.view.SurfaceHolder;
 
 public class JoystickSurfaceThread extends Thread {

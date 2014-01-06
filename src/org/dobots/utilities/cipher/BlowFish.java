@@ -8,10 +8,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dobots.utilities.R;
-
-import android.content.res.Resources;
-
 public class BlowFish {
 	
 	private static final int N = 16;
