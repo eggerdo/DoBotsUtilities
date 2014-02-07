@@ -59,6 +59,8 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 
 	private boolean mAutoExposureEnabled = true;
 	
+	private int mJpegQuality = 90;
+	
     public CameraPreview(Context context) {  
         super(context);  
           
@@ -311,6 +313,14 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
 	public boolean isAutoExposureEnabled() {
 		return mAutoExposureEnabled;
 	}
+	
+	public void setJpegQuality(int quality) {
+		mJpegQuality = quality;
+	}
+	
+	public int getJpegQuality() {
+		return mJpegQuality;
+	}
     
     public void surfaceDestroyed(SurfaceHolder holder) {  
         // Surface will be destroyed when we return, so stop the preview.  
@@ -325,7 +335,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
         // Now that the surface is created, start the preview. 
     	// Note: not all phones support arbitrary preview sizes, so we leave
     	// the default size for now
-    }  
+    }
     
     @Override  
     public void onPreviewFrame(final byte[] data, Camera camera) {  
@@ -344,7 +354,7 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     private byte[] decodeYUV(byte[] yuv, int width, int height) {
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
     	YuvImage yuvImage = new YuvImage(yuv, ImageFormat.NV21, width, height, null);
-    	yuvImage.compressToJpeg(new Rect(0, 0, width, height), 90, out);
+    	yuvImage.compressToJpeg(new Rect(0, 0, width, height), mJpegQuality, out);
     	byte[] imageBytes = out.toByteArray();
     	
     	return imageBytes;
