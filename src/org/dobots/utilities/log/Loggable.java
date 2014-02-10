@@ -1,6 +1,5 @@
 package org.dobots.utilities.log;
 
-import java.util.HashMap;
 
 
 public class Loggable {
@@ -83,26 +82,32 @@ public class Loggable {
 	}
 	
 	
-	private static HashMap<Integer, Long> map = new HashMap<Integer, Long>();
-	private static long max = 0;
-	private static long min = Long.MAX_VALUE;
-	private static double avg = 0;
-	private static int count = 0;
+	private static Entry[] list = new Entry[10];
+	private static class Entry {
+		public long start;
+		public long max = 0;
+		public long min = Long.MAX_VALUE;
+		public double avg = 0;
+		public int count = 0;
+	}
 	
 	public static void startTimeMeasurement(int id) {
-		long start = System.currentTimeMillis();
-		map.put(id, start);
+		if (list[id] == null) {
+			list[id] = new Entry();
+		}
+		list[id].start = System.currentTimeMillis();
 	}
 	
 	public static void stopTimeMeasurement(int id) {
-		long start = map.get(id);
 		long end = System.currentTimeMillis();
+		Entry entry = list[id];
+		long start = entry.start;
 		long d = end - start;
-		max = Math.max(max, d);
-		min = Math.min(min, d);
-		avg = (double) (avg * count + d) / (count + 1);
-		++count;
-		getInstance().error("TimeClock", "time clock: %d ms, min: %d, max: %d, avg: %.0f", d, min, max, avg);
+		entry.max = Math.max(entry.max, d);
+		entry.min = Math.min(entry.min, d);
+		entry.avg = (double) (entry.avg * entry.count + d) / (entry.count + 1);
+		++entry.count;
+		getInstance().error("TimeClock", "time clock [%d]: %d ms, min: %d, max: %d, avg: %.0f", id, d, entry.min, entry.max, entry.avg);
 	}
 
 }

@@ -21,6 +21,7 @@ import android.view.SurfaceHolder;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
 /*
  * See following link for an improved CameraPreview, but which requires Android API >= 11
@@ -140,8 +141,12 @@ public class CameraPreview extends ScalableSurfaceView implements SurfaceHolder.
     	// we can't remove the surface without stopping the preview,
     	// so instead we make the size of the surface 0 and give
     	// it back it's original size in the startCameraDisplay
-    	mOldParams = (LayoutParams)getLayoutParams();
-    	setLayoutParams(new LayoutParams(0,  0));
+    	mOldParams = getLayoutParams();
+    	if (mOldParams instanceof RelativeLayout.LayoutParams) {
+    		setLayoutParams(new android.widget.RelativeLayout.LayoutParams(0, 0));
+    	} else {
+    		setLayoutParams(new LayoutParams(0,  0));
+    	}
     	m_bHidden = true;
     }
     

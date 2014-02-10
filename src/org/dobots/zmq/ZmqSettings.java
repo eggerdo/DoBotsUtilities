@@ -38,7 +38,7 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 	public static final String PREFS_ADDRESS 		= "address";
 	public static final String PREFS_COMMANDPORT 	= "command_port";
 	public static final String PREFS_VIDEOPORT 		= "video_port";
-	public static final String PREFS_EVENTPORT 		= "event_port";
+//	public static final String PREFS_EVENTPORT 		= "event_port";
 //	public static final String PREFS_ROBOTNAME		= "robotname";
 	
 	public static final Boolean DEFAULT_REMOTE		= true;
@@ -46,7 +46,7 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 	public static final String DEFAULT_COMMANDPORT 	= null;
 	public static final String DEFAULT_VIDEOPORT 	= null;
 //	public static final String DEFAULT_ROBOTNAME	= null;
-	public static final String DEFAULT_EVENTPORT 	= null;
+//	public static final String DEFAULT_EVENTPORT 	= null;
 	
 	public interface SettingsChangeListener {
 		public void onChange();
@@ -61,7 +61,7 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 	private String m_strAddress;
 	private String m_strCommandPort;
 	private String m_strVideoPort;
-	private String m_strEventPort;
+//	private String m_strEventPort;
 
 	private boolean m_bRemote;
 
@@ -171,10 +171,10 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
     			editText = (EditText) dialog.findViewById(R.id.txtVideoPort);
     			editText.setText(m_strVideoPort);
     		}
-    		if (m_strEventPort != null) {
-    			editText = (EditText) dialog.findViewById(R.id.txtEventPort);
-    			editText.setText(m_strEventPort);
-    		}
+//    		if (m_strEventPort != null) {
+//    			editText = (EditText) dialog.findViewById(R.id.txtEventPort);
+//    			editText.setText(m_strEventPort);
+//    		}
     	}
     }
     
@@ -186,15 +186,15 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 		m_strAddress = prefs.getString(PREFS_ADDRESS, DEFAULT_ADDRESS);
 		m_strCommandPort = prefs.getString(PREFS_COMMANDPORT, DEFAULT_COMMANDPORT);
 		m_strVideoPort = prefs.getString(PREFS_VIDEOPORT, DEFAULT_VIDEOPORT);
-		m_strEventPort = prefs.getString(PREFS_EVENTPORT, DEFAULT_EVENTPORT);
+//		m_strEventPort = prefs.getString(PREFS_EVENTPORT, DEFAULT_EVENTPORT);
 //		m_strRobotName = prefs.getString(PREFS_ROBOTNAME, DEFAULT_ROBOTNAME);
 		
 		// settings only valid if all values assigned
 		m_bSettingsValid = ((!m_bRemote || ((m_strAddress != "") && (m_strAddress != null))) &&
 							((m_strCommandPort != "") && (m_strCommandPort != null)) &&
-							((m_strVideoPort != "") && (m_strVideoPort != null)) &&
+							((m_strVideoPort != "") && (m_strVideoPort != null)));
 //							((m_strRobotName != "") && (m_strRobotName != null)) &&
-							((m_strEventPort != "") && (m_strEventPort != null)));
+//							((m_strEventPort != "") && (m_strEventPort != null)));
 		return m_bSettingsValid;
     }
 
@@ -221,7 +221,7 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 		editor.putString(PREFS_ADDRESS, strAddress);
 		editor.putString(PREFS_COMMANDPORT, strCommandPort);
 		editor.putString(PREFS_VIDEOPORT, strVideoPort);
-		editor.putString(PREFS_EVENTPORT, strEventPort);
+//		editor.putString(PREFS_EVENTPORT, strEventPort);
 //		editor.putString(PREFS_ROBOTNAME, strNickName);
 		editor.commit();
 		
@@ -252,13 +252,13 @@ public class ZmqSettings implements IMenuListener, IDialogListener {
 		}
 	}
 	
-	public int getEventPort() throws ZmqSettingsInvalidException {
-		try {
-			return Integer.valueOf(m_strEventPort);
-		} catch (NumberFormatException e) {
-			throw new ZmqSettingsInvalidException();
-		}
-	}
+//	public int getEventPort() throws ZmqSettingsInvalidException {
+//		try {
+//			return Integer.valueOf(m_strEventPort);
+//		} catch (NumberFormatException e) {
+//			throw new ZmqSettingsInvalidException();
+//		}
+//	}
 	
 //	public String getRobotName() {
 //		return m_strRobotName;

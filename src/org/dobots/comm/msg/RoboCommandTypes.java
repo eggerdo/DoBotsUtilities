@@ -20,7 +20,7 @@ public class RoboCommandTypes {
 	 * 			timestamp, robot_id and version (json protocol version)
 	 * 		{"header":{"id":...,"tid":...,"timestamp":..., "robot_id":..., "version":...}, "data":...}
 	 */
-	public enum HeaderType {
+	public static enum HeaderType {
 		ht_small, ht_ext
 	}
 	
@@ -56,4 +56,13 @@ public class RoboCommandTypes {
 	public static final String F_COMMAND	= "command";
 	public static final String F_PARAMETER	= "parameter";
 	
+
+	public static enum CameraCommandType {
+		TOGGLE,
+		OFF,
+		ON,
+		UP,
+		DOWN,
+		STOP
+	}
 }

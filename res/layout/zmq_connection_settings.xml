@@ -6,7 +6,6 @@
     android:orientation="vertical" >
 
     <TableLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/tblGeneralSettings"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -44,7 +43,8 @@
             </EditText>
         </TableRow>
 
-        <TableRow>
+        <TableRow
+            android:visibility="gone">
 
             <TextView
                 android:paddingLeft="6dip"
@@ -61,7 +61,7 @@
 
     </TableLayout>
     
-	<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+	<RadioGroup 
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:orientation="vertical">
@@ -81,7 +81,6 @@
     </RadioGroup>
 
 	<TableLayout
-	    xmlns:android="http://schemas.android.com/apk/res/android"
 	    android:id="@+id/tblRemoteSettings"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"

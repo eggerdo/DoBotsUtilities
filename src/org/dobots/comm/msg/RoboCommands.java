@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import org.dobots.comm.Move;
+import org.dobots.comm.msg.RoboCommandTypes.CameraCommandType;
 import org.dobots.comm.msg.RoboCommandTypes.HeaderType;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -129,6 +130,13 @@ public class RoboCommands {
 	//// DRIVE command
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
+	/*
+	 * Examples: 
+	 * {"data":{"speed":-1,"radius":0,"move":"STRAIGHT_FORWARD"},"id":0}
+	 * {"data":{"speed":-1,"radius":0,"move":"STRAIGHT_FORWARD"},"id":0}
+	 * {"data":{"speed":-1,"radius":-80,"move":"FORWARD"},"id":0}
+	 */
+	
 	public class DriveCommand extends BaseCommand {
 		
 		public Move eMove;
@@ -181,15 +189,6 @@ public class RoboCommands {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	//// CAMERA command
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	
-	public enum CameraCommandType {
-		TOGGLE,
-		OFF,
-		ON,
-		UP,
-		DOWN,
-		STOP
-	}
 	
 	public class CameraCommand extends BaseCommand {
 

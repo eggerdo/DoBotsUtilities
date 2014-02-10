@@ -10,6 +10,7 @@ import org.zeromq.ZMsg;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.widget.Toast;
 
 public class ZmqConnectionHelper {
@@ -112,9 +113,11 @@ public class ZmqConnectionHelper {
 			oVideoReceiver.setHWM(20);
 	
 			if (i_bRemote) {
+				Log.d(TAG, "connecting video to " + m_oSettings.getVideoReceiveAddress());
 				oVideoReceiver.connect(m_oSettings.getVideoReceiveAddress());
 			} else {
 				try {
+					Log.d(TAG, "bind video " + m_oSettings.getVideoReceiveAddress());
 					oVideoReceiver.bind(m_oSettings.getVideoReceiveAddress());
 				} catch (Exception e) {
 					Utils.showToast("Video Port is already taken", Toast.LENGTH_LONG);
@@ -134,9 +137,11 @@ public class ZmqConnectionHelper {
 			oVideoSender.setHWM(20);
 
 			if (i_bRemote) {
+				Log.d(TAG, "connecting video to " + m_oSettings.getVideoSendAddress());
 				oVideoSender.connect(m_oSettings.getVideoSendAddress());
 			} else {
 				try {
+					Log.d(TAG, "bind video " + m_oSettings.getVideoSendAddress());
 					oVideoSender.bind(m_oSettings.getVideoSendAddress());
 				} catch (Exception e) {
 					Utils.showToast("Video Port is already taken", Toast.LENGTH_LONG);
@@ -174,9 +179,11 @@ public class ZmqConnectionHelper {
 			oCommandSender = m_oZmqHandler.createSocket(ZMQ.PUSH);
 	
 			if (i_bRemote) {
+				Log.d(TAG, "connecting cmd to " + m_oSettings.getCommandSendAddress());
 				oCommandSender.connect(m_oSettings.getCommandSendAddress());
 			} else {
 				try {
+					Log.d(TAG, "bind cmd " + m_oSettings.getCommandSendAddress());
 					oCommandSender.bind(m_oSettings.getCommandSendAddress());
 				} catch (Exception e) {
 					Utils.showToast("Command Port is already taken", Toast.LENGTH_LONG);
@@ -189,9 +196,11 @@ public class ZmqConnectionHelper {
 			oCommandReceiver = m_oZmqHandler.createSocket(ZMQ.SUB);
 
 			if (i_bRemote) {
+				Log.d(TAG, "connecting cmd to " + m_oSettings.getCommandReceiveAddress());
 				oCommandReceiver.connect(m_oSettings.getCommandReceiveAddress());
 			} else {
 				try {
+					Log.d(TAG, "bind cmd " + m_oSettings.getCommandReceiveAddress());
 					oCommandReceiver.bind(m_oSettings.getCommandReceiveAddress());
 				} catch (Exception e) {
 					Utils.showToast("Command Port is already taken", Toast.LENGTH_LONG);
