@@ -12,6 +12,8 @@ public class DoBotsMessageEncoder {
 	public static final int SENSOR_DATA 	= 4;
 	public static final int MOTOR_COMMAND 	= 5;
 	
+	public static final int USER			= 20;
+	
 	/////////////////////////////////////////////////
 	
 	public static enum HeaderType { HEADER_SMALL, HEADER_BIG };
@@ -43,7 +45,7 @@ public class DoBotsMessageEncoder {
 	}
 	
 
-	private static JSONObject createJsonBase(int message_id) throws JSONException {
+	protected static JSONObject createJsonBase(int message_id) throws JSONException {
 		JSONObject json = new JSONObject();
 		addHeader(json, message_id);
 		return json;
