@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import junit.framework.Assert;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -300,6 +302,7 @@ public class Utils {
 		return true;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static AlertDialog CreateAdapterDialog(Context context, String i_strTitle, ArrayAdapter i_oAdapter, DialogInterface.OnClickListener i_OnClickListener) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_HOLO_LIGHT);
 		builder.setTitle(i_strTitle);
@@ -408,4 +411,8 @@ public class Utils {
 	    });
 	}
 
+	public static String[] getNames(Class<? extends Enum<?>> e) {
+	    return Arrays.toString(e.getEnumConstants()).replaceAll("\\[|]", "").split(", ");
+	}
+	
 }
